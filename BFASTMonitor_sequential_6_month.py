@@ -367,7 +367,6 @@ def main():
                 prefix=prefix)
     else:
         raise Exception("Provide 16-day smoothed npz files")
-        
 
 
 if __name__ == "__main__":
