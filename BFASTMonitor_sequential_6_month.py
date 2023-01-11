@@ -4,6 +4,7 @@
 
 # packages for system interactions
 import argparse
+import glob
 import json
 import os
 from pathlib import Path
@@ -12,6 +13,7 @@ from pathlib import Path
 import rasterio as rio
 import pandas as pd
 import numpy as np
+from natsort import natsort_keygen
 
 from datetime import datetime
 from datetime import timedelta
@@ -130,10 +132,6 @@ def get_geotransformation(metadata_src):
     return metadata
 
 
-def join_results(input_path, output_path, metadata):
-    width, height, transform, crs = metadata
-
-
 def get_monitor_periods_ranges(start, dates):
     starts_list = [s for s in pd.date_range(start=start, end=dates[-1], freq='6MS', tz=None).to_pydatetime()]
     if (dates[-1]-starts_list[-1])<timedelta(days=+180):
@@ -180,12 +178,58 @@ def assemble_results(model, rows, cols, data, dates, start, end, output, name, s
     np.take_along_axis(data, model.breaks[:, :, np.newaxis], axis=-1, out=values_of_breaks)
     values_of_breaks = values_of_breaks.squeeze()
 
-    np.savez_compressed(output+f'/{name}_breaks_{sub}_{start.year}-{end.year}-{start.month}', breaks)
-    np.savez_compressed(output + f'/{name}_breaks_dec_{sub}_{start.year}-{end.year}-{start.month}', breaks_dec)
-    np.savez_compressed(output + f'/{name}_magnitudes_{sub}_{start.year}-{end.year}-{start.month}', magnitudes)
-    np.savez_compressed(output + f'/{name}_means_{sub}_{start.year}-{end.year}-{start.month}', means)
-    np.savez_compressed(output + f'/{name}_valids_{sub}_{start.year}-{end.year}-{start.month}', valids)
-    np.savez_compressed(output + f'/{name}_values_of_breaks_{sub}_{start.year}-{end.year}-{start.month}', values_of_breaks)
+    output = Path(output, f'{start.year}-{end.year}-{start.month}')
+    output.mkdir(parents=True, exist_ok=True)
+
+    result_names = ['breaks', 'breaks_dec', 'magnitudes', 'means', 'valids', 'values_of_breaks']
+    list(map(lambda subdir_name: (output.joinpath(subdir_name)).mkdir(parents=True, exist_ok=True), result_names))
+
+    np.savez_compressed(str(output) + f'/{name}_breaks_{sub}_{start.year}-{end.year}-{start.month}', breaks)
+    np.savez_compressed(str(output) + f'/{name}_breaks_dec_{sub}_{start.year}-{end.year}-{start.month}', breaks_dec)
+    np.savez_compressed(str(output) + f'/{name}_magnitudes_{sub}_{start.year}-{end.year}-{start.month}', magnitudes)
+    np.savez_compressed(str(output) + f'/{name}_means_{sub}_{start.year}-{end.year}-{start.month}', means)
+    np.savez_compressed(str(output) + f'/{name}_valids_{sub}_{start.year}-{end.year}-{start.month}', valids)
+    np.savez_compressed(str(output) + f'/{name}_values_of_breaks_{sub}_{start.year}-{end.year}-{start.month}', values_of_breaks)
+
+
+def join_results(input_path, output_path, metadata, name, prefix):
+    width, height, transform, crs = metadata
+
+    periods = os.listdir(input_path)
+    for period in periods:
+        result_types = os.listdir(Path(input_path, period))
+        for result in result_types:
+            subs = os.listdir(Path(input_path, str(result)))
+            tmp_output_dir = Path(output_path, period)
+            tmp_output_dir.mkdir(parents=True, exist_ok=True)
+
+            npz_paths = glob.glob(str(Path(input_path, str(result), '*sub[0-9]*.npz')))
+            key = natsort_keygen(key=lambda y: y.lower())
+            npz_paths.sort(key=key)
+
+            joined = np.empty([0, width], dtype=float)
+
+            for npz in npz_paths:
+                im = np.load(npz)
+                arr = im[im.files[0]]
+
+                joined = np.append(joined, arr, axis=0)
+
+            joined = np.reshape(joined, (1, height, width))
+
+            res_name = f'{name}_{prefix}_{result}_{period}.tif'
+
+            WritePath = Path(tmp_output_dir, res_name)
+
+            with rio.open(WritePath, 'w',
+                          driver='GTiff',
+                          height=height,
+                          width=width,
+                          count=1,
+                          dtype=rio.float32,
+                          crs=crs,
+                          transform=transform) as dst:
+                dst.write(joined)
 
 
 def do_bfast_monitor_6_month_sequential(model, starts, ends, data, dates, output, name, sub):
@@ -260,37 +304,42 @@ def main():
                 dates = dates[1:len(dates)]
                 del sm_index
 
+                output_path = Path(output_prejoin, prefix, index)
+                output_path.mkdir(parents=True, exist_ok=True)
+
                 do_bfast_monitor_6_month_sequential(model=model,
                                                     starts=starts,
                                                     ends=ends,
                                                     data=data,
                                                     dates=dates,
-                                                    output=Path(output_prejoin, prefix, index).
-                                                    mkdir(parents=True, exist_ok=True),
+                                                    output=str(output_path),
                                                     name=index,
                                                     sub=sub
                                                     )
         else:
             for sub in os.listdir(input_files):
                 npz = np.load(str(Path(input_files, sub, f'sm_nbr_16D_{sub}.npz')))
-                sm_index = np.array(npz[npz.files[0]])
-                data = sm_index
-                del sm_index
+                data = np.array(npz[npz.files[0]])
                 dates = dates[1:len(dates)]
-                del sm_index
+
+                output_path = Path(output_prejoin, prefix, index)
+                output_path.mkdir(parents=True, exist_ok=True)
 
                 do_bfast_monitor_6_month_sequential(model=model,
                                                     starts=starts,
                                                     ends=ends,
                                                     data=data,
                                                     dates=dates,
-                                                    output=Path(output_prejoin, prefix, index).
-                                                    mkdir(parents=True, exist_ok=True),
+                                                    output=str(output_path),
                                                     name=index,
                                                     sub=sub
                                                     )
 
-        join_results(output_path=output, metadata=metadata)
+        join_results(input_path=str(Path(output_prejoin, prefix, index)),
+                     output_path=output,
+                     metadata=metadata,
+                     name=index,
+                     prefix=prefix)
     else:
         raise Exception("Provide 16-day smoothed npz files")
 
