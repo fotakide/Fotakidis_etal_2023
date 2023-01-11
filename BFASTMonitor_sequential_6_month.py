@@ -326,7 +326,7 @@ def main():
 
             for task in bar:
                 sub = subs[task]
-                npz = np.load(str(Path(input_files, sub, f'sm_nbr_16D_{sub}.npz')))
+                npz = np.load(str(Path(input_files, sub, f'sm_nbr_{time_series_resampling}_{sub}.npz')))
                 data = np.array(npz[npz.files[0]])
                 dates = dates[1:len(dates)]
 
