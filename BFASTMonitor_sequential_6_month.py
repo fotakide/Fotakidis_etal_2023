@@ -235,7 +235,7 @@ def join_results(input_path, output_path, metadata, name, prefix):
 def do_bfast_monitor_6_month_sequential(model, starts, ends, data, dates, output, name, sub):
     history = dates[0]
     rows, cols = data.shape[1], data.shape[2]
-    i=0
+    i = 0
     for period in starts:
         data2, dates2 = utils.crop_data_dates(data, dates, start=history, end=ends[i])
         model.set_params(start_monitor=period)
