@@ -40,6 +40,7 @@ def smoothing(index, dates, time_series_resampling, output, suffix, si):
     :return: The smoothed dataset, the new date range corresponding to the resampling frequency
     and the metadata of the dataset (rows and columns).
     """
+    index = np.where(index == -32768, np.nan, index)
     rows, cols = index.shape[1], index.shape[2]
     index_df = pd.DataFrame(index.reshape([index.shape[0], -1]), index=dates)
     del index
