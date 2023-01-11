@@ -173,20 +173,18 @@ def assemble_results(model, rows, cols, data, dates2, dates, start, end, output,
     values_of_breaks = np.choose(flags, data, mode='clip')
     values_of_breaks = values_of_breaks.squeeze()
 
-    print(values_of_breaks.shape)
-
     output = Path(output, f'{start.year}-{end.year}-{start.month}')
     output.mkdir(parents=True, exist_ok=True)
 
     result_names = ['breaks', 'breaks_dec', 'magnitudes', 'means', 'valids', 'values_of_breaks']
     list(map(lambda subdir_name: (output.joinpath(subdir_name)).mkdir(parents=True, exist_ok=True), result_names))
 
-    np.savez_compressed(str(output) + f'/{name}_breaks_{sub}_{start.year}-{end.year}-{start.month}', breaks)
-    np.savez_compressed(str(output) + f'/{name}_breaks_dec_{sub}_{start.year}-{end.year}-{start.month}', breaks_dec)
-    np.savez_compressed(str(output) + f'/{name}_magnitudes_{sub}_{start.year}-{end.year}-{start.month}', magnitudes)
-    np.savez_compressed(str(output) + f'/{name}_means_{sub}_{start.year}-{end.year}-{start.month}', means)
-    np.savez_compressed(str(output) + f'/{name}_valids_{sub}_{start.year}-{end.year}-{start.month}', valids)
-    np.savez_compressed(str(output) + f'/{name}_values_of_breaks_{sub}_{start.year}-{end.year}-{start.month}',
+    np.savez_compressed(f'{str(output)}/breaks/{name}_breaks_{sub}_{start.year}-{end.year}-{start.month}', breaks)
+    np.savez_compressed(f'{str(output)}/breaks_dec/{name}_breaks_dec_{sub}_{start.year}-{end.year}-{start.month}', breaks_dec)
+    np.savez_compressed(f'{str(output)}/magnitudes/{name}_magnitudes_{sub}_{start.year}-{end.year}-{start.month}', magnitudes)
+    np.savez_compressed(f'{str(output)}/means/{name}_means_{sub}_{start.year}-{end.year}-{start.month}', means)
+    np.savez_compressed(f'{str(output)}/valids/{name}_valids_{sub}_{start.year}-{end.year}-{start.month}', valids)
+    np.savez_compressed(f'{str(output)}/values_of_breaks/{name}_values_of_breaks_{sub}_{start.year}-{end.year}-{start.month}',
                         values_of_breaks)
 
 
