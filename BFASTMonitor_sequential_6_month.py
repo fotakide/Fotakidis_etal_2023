@@ -18,6 +18,7 @@ from natsort import natsort_keygen
 from datetime import datetime
 from datetime import timedelta
 from dateutil.relativedelta import relativedelta
+from PyAstronomy import pyasl
 
 # package from bfast monitor and utilities
 from bfast import BFASTMonitor
@@ -141,42 +142,38 @@ def get_monitor_periods_ranges(start, dates):
     return starts_list, ends_list
 
 
-def assemble_results(model, rows, cols, data, dates, start, end, output, name, sub):
+def assemble_results(model, rows, cols, data, dates2, dates, start, end, output, name, sub):
+    dates_monitor = []
+    dates_array = []
+
+    # collect dates for monitor period
+    for i in range(len(dates2)):
+        if start <= dates2[i]:
+            dates_monitor.append(dates2[i])
+    dates_array = np.array(dates_monitor)
+
     breaks_dec = np.empty([rows, cols], dtype=float)
     magnitudes = np.empty([rows, cols], dtype=float)
 
-    valid_idx = (model.breaks >= 0)
-    nan_idx = (model.breaks == -2)
-    minus_one_idx = (model.breaks == -1)
-
     # Extract the relevant dates from the dates_array using the indices in the breaks array
-    valid_dates = dates[model.breaks[valid_idx]]
+    valid_break = model.breaks >= 0
 
-    # Calculate the yearElapsed and yearDuration using numpy
-    startOfThisYear = np.datetime64([d.replace(month=1, day=1) for d in valid_dates])
-    startOfNextYear = startOfThisYear + np.timedelta64(1, 'Y')
-    yearElapsed = (valid_dates - startOfThisYear).astype('timedelta64[D]') / np.timedelta64(1, 'D')
-    yearDuration = (startOfNextYear - startOfThisYear).astype('timedelta64[D]') / np.timedelta64(1, 'D')
-    fraction = np.round(yearElapsed / yearDuration, decimals=2)
-
-    # Use the valid fraction to get the breaks_dec
-    breaks_dec[valid_idx] = valid_dates.year + fraction
-    # Extract the valid magnitudes from the model
-    magnitudes[valid_idx] = model.magnitudes[valid_idx]
-
-    breaks_dec[nan_idx] = np.nan
-    magnitudes[nan_idx] = np.nan
-
-    breaks_dec[minus_one_idx] = -1
-    magnitudes[minus_one_idx] = model.magnitudes[minus_one_idx]
+    if model.breaks.max()>=0:
+        breaks_dec = np.where(valid_break, [pyasl.decimalYear(dates_array[i]) for i in model.breaks[valid_break]], model.breaks)
+    else:
+        breaks_dec = model.breaks
 
     breaks = model.breaks
     means = model.means
     valids = model.valids
+    magnitudes = model.magnitudes
 
-    values_of_breaks = np.empty(model.breaks.shape + (1,))
-    np.take_along_axis(data, model.breaks[:, :, np.newaxis], axis=-1, out=values_of_breaks)
+    data = data[int(data.shape[0]-len(dates_array)):data.shape[0],:,:]
+    flags = np.expand_dims(model.breaks, axis=0)
+    values_of_breaks = np.choose(flags, data, mode='clip')
     values_of_breaks = values_of_breaks.squeeze()
+
+    print(values_of_breaks.shape)
 
     output = Path(output, f'{start.year}-{end.year}-{start.month}')
     output.mkdir(parents=True, exist_ok=True)
@@ -241,7 +238,7 @@ def do_bfast_monitor_6_month_sequential(model, starts, ends, data, dates, output
         model.set_params(start_monitor=period)
         model.fit(data=data2.astype('int16'), dates=dates2, nan_value=-32768)
         period_start, period_end = period, ends[i]
-        assemble_results(model, rows, cols, data2, dates2, period_start,
+        assemble_results(model, rows, cols, data2, dates2, dates, period_start,
                          period_end, output, name, sub)
         i += 1
 
@@ -298,6 +295,7 @@ def main():
     )
 
     if supplying_16D_smoothed_npz:
+        dates = [d for d in pd.date_range(start=dates[0], end=dates[-1], freq='16D', tz=None).to_pydatetime()]
         if index in ['dnbr', 'rbr']:
             subs = os.listdir(input_files)
             bar = tqdm(range(len(subs)))
