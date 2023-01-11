@@ -270,8 +270,6 @@ def main():
                                                     name=index,
                                                     sub=sub
                                                     )
-
-            join_results(output_path=output, metadata=metadata)
         else:
             for sub in os.listdir(input_files):
                 npz = np.load(str(Path(input_files, sub, f'sm_nbr_16D_{sub}.npz')))
@@ -292,7 +290,7 @@ def main():
                                                     sub=sub
                                                     )
 
-            join_results(output_path=output, metadata=metadata)
+        join_results(output_path=output, metadata=metadata)
     else:
         raise Exception("Provide 16-day smoothed npz files")
 
