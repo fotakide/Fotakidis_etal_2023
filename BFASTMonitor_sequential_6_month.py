@@ -134,9 +134,9 @@ def get_geotransformation(metadata_src):
 
 def get_monitor_periods_ranges(start, dates):
     starts_list = [s for s in pd.date_range(start=start, end=dates[-1], freq='6MS', tz=None).to_pydatetime()]
-    if (dates[-1]-starts_list[-1])<timedelta(days=+180):
+    if (dates[-1] - starts_list[-1]) < timedelta(days=+180):
         starts_list[-1] = (dates[-1] - timedelta(days=+180)).replace(day=1)
-    ends_list = [e+relativedelta(months=+6) for e in starts_list]
+    ends_list = [e + relativedelta(months=+6) for e in starts_list]
     ends_list[-1] = dates[-1]
     return starts_list, ends_list
 
@@ -189,7 +189,8 @@ def assemble_results(model, rows, cols, data, dates, start, end, output, name, s
     np.savez_compressed(str(output) + f'/{name}_magnitudes_{sub}_{start.year}-{end.year}-{start.month}', magnitudes)
     np.savez_compressed(str(output) + f'/{name}_means_{sub}_{start.year}-{end.year}-{start.month}', means)
     np.savez_compressed(str(output) + f'/{name}_valids_{sub}_{start.year}-{end.year}-{start.month}', valids)
-    np.savez_compressed(str(output) + f'/{name}_values_of_breaks_{sub}_{start.year}-{end.year}-{start.month}', values_of_breaks)
+    np.savez_compressed(str(output) + f'/{name}_values_of_breaks_{sub}_{start.year}-{end.year}-{start.month}',
+                        values_of_breaks)
 
 
 def join_results(input_path, output_path, metadata, name, prefix):
@@ -239,8 +240,9 @@ def do_bfast_monitor_6_month_sequential(model, starts, ends, data, dates, output
         data2, dates2 = utils.crop_data_dates(data, dates, start=history, end=ends[period[0]])
         model.set_params(start_monitor=period[1])
         model.fit(data=data2.astype('int16'), dates=dates2, nan_value=-32768)
-        # period_start, period_end = period[1][0], ends[period[0]]
-        print(period[1][0], ends[period[0]])
+        period_start, period_end = period[1], ends[period[0]]
+        print(period)
+
         break
         # assemble_results(model, rows, cols, data2, dates2, period_start,
         #                  period_end, output, name, sub)
