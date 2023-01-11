@@ -4,9 +4,7 @@
     <option name="SCOPE_TYPE" value="3" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="e38e4f01-a2f6-4824-b3e1-b7309c2c7d5d" name="Changes" comment="v0.2.4">
-      <change beforePath="$PROJECT_DIR$/BFASTMonitor_sequential_6_month.py" beforeDir="false" afterPath="$PROJECT_DIR$/BFASTMonitor_sequential_6_month.py" afterDir="false" />
-    </list>
+    <list default="true" id="e38e4f01-a2f6-4824-b3e1-b7309c2c7d5d" name="Changes" comment="v0.2.5" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -179,7 +177,21 @@
       <option name="project" value="LOCAL" />
       <updated>1673441689881</updated>
     </task>
-    <option name="localTasksCounter" value="11" />
+    <task id="LOCAL-00011" summary="v0.2.4">
+      <created>1673441775847</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1673441775847</updated>
+    </task>
+    <task id="LOCAL-00012" summary="v0.2.5">
+      <created>1673441989784</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1673441989784</updated>
+    </task>
+    <option name="localTasksCounter" value="13" />
     <servers />
   </component>
   <component name="Vcs.Log.History.Properties">
@@ -237,6 +249,7 @@
     <MESSAGE value="v0.2.2" />
     <MESSAGE value="v0.2.3" />
     <MESSAGE value="v0.2.4" />
-    <option name="LAST_COMMIT_MESSAGE" value="v0.2.4" />
+    <MESSAGE value="v0.2.5" />
+    <option name="LAST_COMMIT_MESSAGE" value="v0.2.5" />
   </component>
 </project>
