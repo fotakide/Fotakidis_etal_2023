@@ -151,25 +151,25 @@ def assemble_results(model, rows, cols, data, dates2, dates, start, end, output,
         if start <= dates2[i]:
             dates_monitor.append(dates2[i])
     dates_array = np.array(dates_monitor)
-
+    
     breaks_dec = np.empty([rows, cols], dtype=float)
     magnitudes = np.empty([rows, cols], dtype=float)
 
-    # Extract the relevant dates from the dates_array using the indices in the breaks array
-    valid_break = model.breaks >= 0
-
+    # Extract the relevant dates from the dates_array using the indices in the breaks array   
     if model.breaks.max()>=0:
-        breaks_dec = np.where(valid_break, [pyasl.decimalYear(dates_array[i]) for i in model.breaks[valid_break]], model.breaks)
+        valid_break = model.breaks >= 0
+        dates_decimal = np.array([round(pyasl.decimalYear(d),3) for d in dates_array])
+        breaks_dec = np.where(valid_break, dates_decimal[model.breaks], model.breaks)
     else:
         breaks_dec = model.breaks
-
+    
     breaks = model.breaks
     means = model.means
     valids = model.valids
     magnitudes = model.magnitudes
 
     data = data[int(data.shape[0]-len(dates_array)):data.shape[0],:,:]
-    flags = np.expand_dims(model.breaks, axis=0)
+    flags = np.expand_dims(model.breaks, axis=0)  
     values_of_breaks = np.choose(flags, data, mode='clip')
     values_of_breaks = values_of_breaks.squeeze()
 
@@ -192,13 +192,18 @@ def join_results(input_path, output_path, metadata, name, prefix):
     width, height, transform, crs = metadata
 
     periods = os.listdir(input_path)
-    for period in periods:
+    bar = tqdm(range(len(periods)))
+    for task in bar:
+        period = periods[task]
+        bar.set_description(f'Joining Results {period}')
         result_types = os.listdir(Path(input_path, period))
+
         for result in result_types:
+            bar.set_description(f'Joining Results {period} - {result}')
             tmp_output_dir = Path(output_path, period)
             tmp_output_dir.mkdir(parents=True, exist_ok=True)
 
-            npz_paths = glob.glob(str(Path(input_path, str(result), '*sub[0-9]*.npz')))
+            npz_paths = glob.glob(str(Path(input_path, period ,str(result), '*sub[0-9]*.npz')))
             key = natsort_keygen(key=lambda y: y.lower())
             npz_paths.sort(key=key)
 
@@ -270,6 +275,7 @@ def main():
     dates_file = parameters_dict['dates']
     start_monitor = datetime.strptime(bfast_param['start_monitor'], '%Y-%m-%d')
     time_series_resampling = parameters_dict['time_series_resampling']
+    only_join = parameters_dict['only_join']
 
     # Set list of dates
     with open(dates_file) as f:
@@ -292,20 +298,20 @@ def main():
         find_magnitudes=bfast_param['find_magnitudes']
     )
 
-    if supplying_16D_smoothed_npz:
+    if (supplying_16D_smoothed_npz and not only_join):
         dates = [d for d in pd.date_range(start=dates[0], end=dates[-1], freq='16D', tz=None).to_pydatetime()]
         if index in ['dnbr', 'rbr']:
             subs = os.listdir(input_files)
             bar = tqdm(range(len(subs)))
+            dates = dates[1:len(dates)]
 
             for task in bar:
                 bar.set_description('Loading...')
                 sub = subs[task]
                 npz = np.load(str(Path(input_files, sub, f'sm_nbr_16D_{sub}.npz')))
                 sm_index = np.array(npz[npz.files[0]])
-
+                print(Path(input_files, sub, f'sm_nbr_16D_{sub}.npz'))
                 data = get_bitemporal_data(index, sm_index)
-                dates = dates[1:len(dates)]
                 del sm_index
 
                 output_path = Path(output_prejoin, prefix, index)
@@ -324,14 +330,14 @@ def main():
         else:
             subs = os.listdir(input_files)
             bar = tqdm(range(len(subs)))
+            dates = dates[1:len(dates)]
 
             for task in bar:
                 bar.set_description('Loading...')
                 sub = subs[task]
                 npz = np.load(str(Path(input_files, sub, f'sm_nbr_{time_series_resampling}_{sub}.npz')))
                 data = np.array(npz[npz.files[0]])
-                dates = dates[1:len(dates)]
-
+                
                 output_path = Path(output_prejoin, prefix, index)
                 output_path.mkdir(parents=True, exist_ok=True)
 
@@ -352,8 +358,16 @@ def main():
                      name=index,
                      prefix=prefix)
         bar.set_description('Done')
+    elif only_join:
+        output_path = Path(output_prejoin, prefix, index)
+        join_results(input_path=str(Path(output_prejoin, prefix, index)),
+                output_path=output,
+                metadata=metadata,
+                name=index,
+                prefix=prefix)
     else:
         raise Exception("Provide 16-day smoothed npz files")
+        
 
 
 if __name__ == "__main__":
