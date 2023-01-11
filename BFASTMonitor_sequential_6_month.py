@@ -239,9 +239,10 @@ def do_bfast_monitor_6_month_sequential(model, starts, ends, data, dates, output
         data2, dates2 = utils.crop_data_dates(data, dates, start=history, end=ends[period[0]])
         model.set_params(start_monitor=period[1])
         model.fit(data=data2.astype('int16'), dates=dates2, nan_value=-32768)
-        period_start, period_end = period[1][0], ends[period[0]]
-        assemble_results(model, rows, cols, data2, dates2, period_start,
-                         period_end, output, name, sub)
+        # period_start, period_end = period[1][0], ends[period[0]]
+        print(period[1][0], ends[period[0]])
+        # assemble_results(model, rows, cols, data2, dates2, period_start,
+        #                  period_end, output, name, sub)
 
 
 def main():
