@@ -256,7 +256,7 @@ def main():
         parameters_dict = json.load(f)
 
     input_files = parameters_dict['input']
-    supplying_16D_smoothed_npz = json.loads(parameters_dict['supplying_16D_smoothed_npz'].lower())
+    supplying_16D_smoothed_npz = parameters_dict['supplying_16D_smoothed_npz']
 
     output = parameters_dict['output']
     output_prejoin = parameters_dict['output_prejoin']
@@ -285,13 +285,13 @@ def main():
         freq=bfast_param['freq'],
         k=bfast_param['k'],
         hfrac=bfast_param['hfrac'],
-        trend=json.loads(bfast_param['trend'].lower()),
+        trend=bfast_param['trend'],
         level=bfast_param['level'],
         backend=bfast_param['backend'],
         verbose=bfast_param['verbose'],
         device_id=bfast_param['device_id'],
-        detailed_results=json.loads(bfast_param['detailed_results'].lower()),
-        find_magnitudes=json.loads(bfast_param['find_magnitudes'].lower())
+        detailed_results=bfast_param['detailed_results'],
+        find_magnitudes=bfast_param['find_magnitudes']
     )
 
     if supplying_16D_smoothed_npz:
