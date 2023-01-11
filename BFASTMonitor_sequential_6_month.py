@@ -274,9 +274,25 @@ def main():
             join_results(output_path=output, metadata=metadata)
         else:
             for sub in os.listdir(input_files):
+                npz = np.load(str(Path(input_files, sub, f'sm_nbr_16D_{sub}.npz')))
+                sm_index = np.array(npz[npz.files[0]])
                 data = sm_index
                 del sm_index
+                dates = dates[1:len(dates)]
+                del sm_index
 
+                do_bfast_monitor_6_month_sequential(model=model,
+                                                    starts=starts,
+                                                    ends=ends,
+                                                    data=data,
+                                                    dates=dates,
+                                                    output=Path(output_prejoin, prefix, index).
+                                                    mkdir(parents=True, exist_ok=True),
+                                                    name=index,
+                                                    sub=sub
+                                                    )
+
+            join_results(output_path=output, metadata=metadata)
     else:
         raise Exception("Provide 16-day smoothed npz files")
 
