@@ -241,6 +241,7 @@ def do_bfast_monitor_6_month_sequential(model, starts, ends, data, dates, output
         model.fit(data=data2.astype('int16'), dates=dates2, nan_value=-32768)
         # period_start, period_end = period[1][0], ends[period[0]]
         print(period[1][0], ends[period[0]])
+        break
         # assemble_results(model, rows, cols, data2, dates2, period_start,
         #                  period_end, output, name, sub)
 
