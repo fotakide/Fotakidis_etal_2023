@@ -235,18 +235,15 @@ def join_results(input_path, output_path, metadata, name, prefix):
 def do_bfast_monitor_6_month_sequential(model, starts, ends, data, dates, output, name, sub):
     history = dates[0]
     rows, cols = data.shape[1], data.shape[2]
-    for period in enumerate(starts):
-        data2, dates2 = utils.crop_data_dates(data, dates, start=history, end=ends[period[0]])
-        model.set_params(start_monitor=period[1])
-        # model.fit(data=data2.astype('int16'), dates=dates2, nan_value=-32768)
-        period_start, period_end = period[1], ends[period[0]]
-        print(model.get_params())
-        print(period)
-        print(period[1])
-        print(ends[period[0]])
-        break
-        # assemble_results(model, rows, cols, data2, dates2, period_start,
-        #                  period_end, output, name, sub)
+    i=0
+    for period in starts:
+        data2, dates2 = utils.crop_data_dates(data, dates, start=history, end=ends[i])
+        model.set_params(start_monitor=period)
+        model.fit(data=data2.astype('int16'), dates=dates2, nan_value=-32768)
+        period_start, period_end = period, ends[i]
+        assemble_results(model, rows, cols, data2, dates2, period_start,
+                         period_end, output, name, sub)
+        i += 1
 
 
 def main():
