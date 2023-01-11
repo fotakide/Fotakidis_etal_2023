@@ -200,7 +200,6 @@ def join_results(input_path, output_path, metadata, name, prefix):
     for period in periods:
         result_types = os.listdir(Path(input_path, period))
         for result in result_types:
-            subs = os.listdir(Path(input_path, str(result)))
             tmp_output_dir = Path(output_path, period)
             tmp_output_dir.mkdir(parents=True, exist_ok=True)
 
