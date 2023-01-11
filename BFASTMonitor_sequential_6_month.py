@@ -300,6 +300,7 @@ def main():
             bar = tqdm(range(len(subs)))
 
             for task in bar:
+                bar.set_description('Loading...')
                 sub = subs[task]
                 npz = np.load(str(Path(input_files, sub, f'sm_nbr_16D_{sub}.npz')))
                 sm_index = np.array(npz[npz.files[0]])
@@ -311,6 +312,7 @@ def main():
                 output_path = Path(output_prejoin, prefix, index)
                 output_path.mkdir(parents=True, exist_ok=True)
 
+                bar.set_description('Monitoring...')
                 do_bfast_monitor_6_month_sequential(model=model,
                                                     starts=starts,
                                                     ends=ends,
@@ -325,6 +327,7 @@ def main():
             bar = tqdm(range(len(subs)))
 
             for task in bar:
+                bar.set_description('Loading...')
                 sub = subs[task]
                 npz = np.load(str(Path(input_files, sub, f'sm_nbr_{time_series_resampling}_{sub}.npz')))
                 data = np.array(npz[npz.files[0]])
@@ -333,6 +336,7 @@ def main():
                 output_path = Path(output_prejoin, prefix, index)
                 output_path.mkdir(parents=True, exist_ok=True)
 
+                bar.set_description('Monitoring...')
                 do_bfast_monitor_6_month_sequential(model=model,
                                                     starts=starts,
                                                     ends=ends,
@@ -342,12 +346,13 @@ def main():
                                                     name=index,
                                                     sub=sub
                                                     )
-
+        bar.set_description('Joining Results...')
         join_results(input_path=str(Path(output_prejoin, prefix, index)),
                      output_path=output,
                      metadata=metadata,
                      name=index,
                      prefix=prefix)
+        bar.set_description('Done')
     else:
         raise Exception("Provide 16-day smoothed npz files")
 
