@@ -1,0 +1,3 @@
+"""
+Binomial logistic Regression
+"""
