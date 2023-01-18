@@ -113,3 +113,5 @@ with plt.style.context("bmh"):
     ax[1].axhline(0.5, color="k", ls=":", lw=1)
     ax[1].set_xticklabels([])
     plt.show()
+    plt.savefig(f'E:/Publications/BFAST_Monitor/results/blr/zonal_statistics/blr_{index}.png',
+                dpi=300)
