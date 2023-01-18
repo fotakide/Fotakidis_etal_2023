@@ -100,14 +100,15 @@ with plt.style.context("bmh"):
         roc_auc=roc_auc).plot(ax=ax[0])
     ax[0].set_title(f'{index_str} - ROC curve')
 
+    df_test.x = df_test.x/10000
     df_test.plot(
         x="x", y="proba", ax=ax[1],
         ylabel="Predicted Probabilities", xlabel="Magnitude",
         title=f"Cut-Off ({index_str})", legend=False
     )
-    ax[1].axvline(final.iloc[0].x, color="r", ls="-.", lw=1)
+    ax[1].axvline(final.iloc[0].x/10000, color="r", ls="-.", lw=1)
     ax[1].axhline(final.iloc[0].proba, color="r", ls="-.", lw=1)
-    ax[1].axvline(final50.iloc[0].x, color="k", ls=":", lw=1)
+    ax[1].axvline(final50.iloc[0].x/10000, color="k", ls=":", lw=1)
     ax[1].axhline(0.5, color="k", ls=":", lw=1)
     for tick in ax[1].get_xticklabels():
         tick.set_visible(True)
