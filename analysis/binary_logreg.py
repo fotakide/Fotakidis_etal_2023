@@ -30,10 +30,11 @@ data["zone"] = pd.to_numeric(data["zone"], errors='coerce')
 data["min"] = pd.to_numeric(data["min"], errors='coerce')
 data.dropna(inplace=True)
 data["min"] = data["min"].astype(int)
+data.rename(columns={'zone': 'magnitude', 'min': 'burned'})
 
 # Make 50-50
-burned_1 = data[data['min'] == 1]
-burned_0 = data[data['min'] == 0]
+burned_1 = data[data['burned'] == 1]
+burned_0 = data[data['burned'] == 0]
 
 entries_to_remove = burned_1.shape[0] - burned_0.shape[0]
 burned_1_keep = burned_1.sample(burned_0.shape[0])
