@@ -2,13 +2,13 @@ import pandas as pd
 import numpy as np
 import seaborn as sns
 
-from sklearn.model_selection import GridSearchCV
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import roc_curve, auc, RocCurveDisplay
 
 import matplotlib.pyplot as plt
 
+import csv
 import warnings
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
@@ -115,3 +115,8 @@ with plt.style.context("bmh"):
     plt.show()
     plt.savefig(f'E:/Publications/BFAST_Monitor/results/blr/zonal_statistics/blr_{index}.png',
                 dpi=300)
+
+with open(f'E:/Publications/BFAST_Monitor/results/blr/zonal_statistics/blr_{index}.csv', 'a', newline='\n') as res_file:
+    writer = csv.writer(res_file)
+    writer.writerow(['Accuracy', classifier.score(X_test, Y_test)])
+    writer.writerow(['AUC ROC', roc_auc])
