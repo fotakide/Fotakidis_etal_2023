@@ -81,10 +81,10 @@ df_test = pd.DataFrame({
 
 final = df_test.loc[df_test['proba'] == locroc["thresholds"].values[0]]
 # final50 = df_test.loc[round(df_test['proba'], 6) == 0.5]
-final50 = df_test.loc[(round(df_test['proba'], 5) == 0.5)&df_test['y']==1]
+final50 = df_test.loc[(round(df_test['proba'], 5) == 0.5) & df_test['y'] == 1]
 
 pd.concat([final, final50]).to_csv(f'E:/Publications/BFAST_Monitor/results/blr/zonal_statistics/blr_{index}.csv',
-                                   sep = ',')
+                                   sep=',')
 
 df_test.sort_values(by="proba", inplace=True)
 index_str = index_dict[index]
@@ -92,15 +92,13 @@ index_str = index_dict[index]
 with plt.style.context("bmh"):
     fig, ax = plt.subplots(1, 2, figsize=(15, 5))
 
+    ax[0].axline(xy1=(0, 0), slope=1, color="k", ls=":")
+    reversed_fpr = pd.Series(data=roc['1-fpr'].values, index=(roc['1-fpr'].index / 114758))
+    ax[0].plot(reversed_fpr, color='red')
     RocCurveDisplay(
         fpr=roc.fpr, tpr=roc.tpr,
         roc_auc=roc_auc).plot(ax=ax[0])
     ax[0].set_title(f'{index_str} - ROC curve')
-    ax[0].axline(xy1=(0, 0), slope=1, color="k", ls=":")
-
-    reversed_fpr = pd.Series(data=roc['1-fpr'].values, index=(roc['1-fpr'].index/114758))
-    ax[0].plot(reversed_fpr, color='red')
-    ax[0].set_xticklabels([])
 
     df_test.plot(
         x="x", y="proba", ax=ax[1],
@@ -111,7 +109,9 @@ with plt.style.context("bmh"):
     ax[1].axhline(final.iloc[0].proba, color="r", ls="-.", lw=1)
     ax[1].axvline(final50.iloc[0].x, color="k", ls=":", lw=1)
     ax[1].axhline(0.5, color="k", ls=":", lw=1)
-    ax[1].set_xticklabels([])
+    for tick in ax[1].get_xticklabels():
+        tick.set_visible(True)
+    plt.tight_layout()
     plt.show()
     plt.savefig(f'E:/Publications/BFAST_Monitor/results/blr/zonal_statistics/blr_{index}.png',
                 dpi=300)
