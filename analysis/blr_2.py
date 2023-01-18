@@ -14,6 +14,8 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import roc_curve, roc_auc_score, auc, accuracy_score
 
+from sklearn.metrics import classification_report, accuracy_score
+
 import matplotlib.pyplot as plt
 
 plt.rc("font", size=14)
@@ -91,60 +93,38 @@ print("percentage of burned", pct_of_sub * 100)
 Zones_X = data.iloc[:, :-1].values
 Burn_Y = data.iloc[:, -1].values
 
-Zones_train, Zones_test, Burn_train, Burn_test = \
-    train_test_split(Zones_X, Burn_Y, test_size=0.25, random_state=42)
+train_data, test_data = train_test_split(df, test_size=0.25, random_state=0)
 # random_state is the size for each split and gives consistent results and reproducibility
 
-grid={"C":np.logspace(-3,3,7), "penalty":["l1","l2"]}# l1 lasso l2 ridge
-logreg=LogisticRegression()
-logreg_cv=GridSearchCV(logreg,grid,cv=10)
-logreg_cv.fit(Zones_train,Burn_train)
 
-print("tuned hpyerparameters :(best parameters) ",logreg_cv.best_params_)
-print("accuracy :",logreg_cv.best_score_)
+formula = ('min~zone')
+model = logit(formula=formula,data=train_data).fit()
+print(np.exp(model.params))
 
+AME = model.get_margeff(at='overall', method='dydx')
+print(AME.summary())
 
-log_reg = LogisticRegression(C=logreg_cv.best_params_['C'],
-                             solver='liblinear',
-                             penalty=logreg_cv.best_params_['penalty'],
-                             max_iter=200000, random_state=16)
+prediction = model.predict(exog=test_data)
+cutoff = 0.5
+y_prediction = np.where(prediction > cutoff, 1, 0)
 
-log_reg.fit(Zones_train, Burn_train)
+y_actual = test_data["min"]
 
-# make predictions on the test data
-y_pred = log_reg.predict(Zones_test)
+conf_matrix = pd.crosstab(y_actual, y_prediction,
+                          rownames=["Actual"],
+                          colnames=["predicted"],
+                          margins=True)
+print(conf_matrix)
 
-# calculate the accuracy of the model
-cnf_matrix = confusion_matrix(Burn_test, y_pred)
+accuracy = accuracy_score(y_actual, y_prediction)
+print('Accuracy: %.2f' %accuracy)
 
-accuracy = log_reg.score(Zones_test, Burn_test)
+print(classification_report(y_actual, y_prediction))
 
-print(f'Accuracy: {accuracy:.2f}')
-
-# get the coefficient of the magnitude feature
-magnitude_coef = log_reg.coef_[0][0]
-
-# calculate the threshold
-
-# Find optimal probability threshold
-# https://towardsdatascience.com/calculating-and-setting-thresholds-to-optimise-logistic-regression-performance-c77e6d112d7e
-
-threshold = -log_reg.intercept_[0] / magnitude_coef
-
-print(f'Optimal magnitude threshold: {threshold}')
-
-#ROC Curve
-plt.figure(2)
-y_pred_proba = log_reg.predict_proba(Zones_test)[::,1]
-fpr, tpr, _ = roc_curve(Burn_test,  y_pred_proba)
-auc = roc_auc_score(Burn_test, y_pred_proba)
-plt.plot(fpr,tpr,label="data 1, auc="+str(round(auc,3)))
-plt.legend(loc=4)
-plt.show()
 
 #BLR plot
 sns.regplot(x=df['zone'], y=df['min'],
-            y_jitter=0.03,
+            y_jitter=None,
             data=df,
             logistic=True,
             ci=None)

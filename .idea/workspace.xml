@@ -4,8 +4,10 @@
     <option name="SCOPE_TYPE" value="3" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="e38e4f01-a2f6-4824-b3e1-b7309c2c7d5d" name="Changes" comment="v0.2.6">
-      <change afterPath="$PROJECT_DIR$/asdsad.py" afterDir="false" />
+    <list default="true" id="e38e4f01-a2f6-4824-b3e1-b7309c2c7d5d" name="Changes" comment="v0.3.0">
+      <change afterPath="$PROJECT_DIR$/analysis/blr_2.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/analysis/blr.py" beforeDir="false" afterPath="$PROJECT_DIR$/analysis/blr.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -40,19 +42,42 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ASKED_ADD_EXTERNAL_FILES": "true",
-    "last_opened_file_path": "E:/Publications/BFAST_Monitor/code",
-    "settings.editor.selected.configurable": "preferences.general"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;E:/Publications/BFAST_Monitor/code&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.general&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="E:\Publications\BFAST_Monitor\code" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.Smoothing__">
+  <component name="RunManager" selected="Python.BLR">
+    <configuration name="BLR" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="code" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/BLR.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="Smoothing__" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="code" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -97,6 +122,7 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.BLR" />
         <item itemvalue="Python.Smoothing__" />
       </list>
     </recent_temporary>
@@ -292,7 +318,63 @@
       <option name="project" value="LOCAL" />
       <updated>1673445349438</updated>
     </task>
-    <option name="localTasksCounter" value="27" />
+    <task id="LOCAL-00027" summary="v0.2.6">
+      <created>1673445474291</created>
+      <option name="number" value="00027" />
+      <option name="presentableId" value="LOCAL-00027" />
+      <option name="project" value="LOCAL" />
+      <updated>1673445474291</updated>
+    </task>
+    <task id="LOCAL-00028" summary="v0.2.7">
+      <created>1673451061165</created>
+      <option name="number" value="00028" />
+      <option name="presentableId" value="LOCAL-00028" />
+      <option name="project" value="LOCAL" />
+      <updated>1673451061165</updated>
+    </task>
+    <task id="LOCAL-00029" summary="v0.2.7">
+      <created>1673451740061</created>
+      <option name="number" value="00029" />
+      <option name="presentableId" value="LOCAL-00029" />
+      <option name="project" value="LOCAL" />
+      <updated>1673451740061</updated>
+    </task>
+    <task id="LOCAL-00030" summary="v0.2.8">
+      <created>1673464184282</created>
+      <option name="number" value="00030" />
+      <option name="presentableId" value="LOCAL-00030" />
+      <option name="project" value="LOCAL" />
+      <updated>1673464184282</updated>
+    </task>
+    <task id="LOCAL-00031" summary="v0.2.8">
+      <created>1673464289517</created>
+      <option name="number" value="00031" />
+      <option name="presentableId" value="LOCAL-00031" />
+      <option name="project" value="LOCAL" />
+      <updated>1673464289517</updated>
+    </task>
+    <task id="LOCAL-00032" summary="v0.2.8">
+      <created>1673464324543</created>
+      <option name="number" value="00032" />
+      <option name="presentableId" value="LOCAL-00032" />
+      <option name="project" value="LOCAL" />
+      <updated>1673464324543</updated>
+    </task>
+    <task id="LOCAL-00033" summary="v0.2.8">
+      <created>1673632172255</created>
+      <option name="number" value="00033" />
+      <option name="presentableId" value="LOCAL-00033" />
+      <option name="project" value="LOCAL" />
+      <updated>1673632172255</updated>
+    </task>
+    <task id="LOCAL-00034" summary="v0.3.0">
+      <created>1673639432078</created>
+      <option name="number" value="00034" />
+      <option name="presentableId" value="LOCAL-00034" />
+      <option name="project" value="LOCAL" />
+      <updated>1673639432078</updated>
+    </task>
+    <option name="localTasksCounter" value="35" />
     <servers />
   </component>
   <component name="Vcs.Log.History.Properties">
@@ -352,6 +434,9 @@
     <MESSAGE value="v0.2.4" />
     <MESSAGE value="v0.2.5" />
     <MESSAGE value="v0.2.6" />
-    <option name="LAST_COMMIT_MESSAGE" value="v0.2.6" />
+    <MESSAGE value="v0.2.7" />
+    <MESSAGE value="v0.2.8" />
+    <MESSAGE value="v0.3.0" />
+    <option name="LAST_COMMIT_MESSAGE" value="v0.3.0" />
   </component>
 </project>
