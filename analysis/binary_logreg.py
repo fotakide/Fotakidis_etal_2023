@@ -2,24 +2,29 @@ import pandas as pd
 import numpy as np
 import seaborn as sns
 
-import statsmodels.api as sm
-from statsmodels.formula.api import logit
-
 from sklearn.model_selection import GridSearchCV
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import confusion_matrix, classification_report
-from sklearn.metrics import roc_curve, roc_auc_score, auc, accuracy_score
+from sklearn.metrics import roc_curve, auc, RocCurveDisplay
 
 import matplotlib.pyplot as plt
+
+import warnings
+
+warnings.simplefilter(action='ignore', category=FutureWarning)
 
 plt.rc("font", size=14)
 
 sns.set(style="white")
 sns.set(style="whitegrid", color_codes=True)
 
+index = input('Choose [nbr, dnbr, rbr]')
+index_dict = {'nbr': 'NBR',
+              'dnbr': 'dNBR',
+              'rbr': 'RBR'}
+
 data = pd.read_csv(
-    "E:/Publications/BFAST_Monitor/results/blr/zonal_statistics/dnbr/all_dnbr_raslayer_zonal_statistics.csv",
+    f"E:/Publications/BFAST_Monitor/results/blr/zonal_statistics/{index}/all_{index}_raslayer_zonal_statistics.csv",
     usecols=['zone', 'min'], low_memory=False)
 data["zone"] = pd.to_numeric(data["zone"], errors='coerce')
 data["min"] = pd.to_numeric(data["min"], errors='coerce')
@@ -38,44 +43,35 @@ X = data.iloc[:, :-1]
 Y = data.iloc[:, -1]
 
 X_train, X_test, Y_train, Y_test = train_test_split(X, Y, random_state=0)
-classifier = LogisticRegression(solver='lbfgs', random_state=0)
+
+classifier = LogisticRegression(C=1,
+                                solver='saga',
+                                penalty='l1',
+                                max_iter=10000, random_state=42, multi_class='ovr')
+
 classifier.fit(X_train, Y_train)
 
 predicted_y = classifier.predict(X_test)
 
 print('Accuracy: {:.2f}'.format(classifier.score(X_test, Y_test)))
 
-#ROC Curve
-y_pred_proba = classifier.predict_proba(X_test)[::,1]
-fpr, tpr, thresholds = roc_curve(Y_test,  y_pred_proba)
-# auc = roc_auc_score(Y_test, y_pred_proba)
+# ROC Curve
+y_pred_proba = classifier.predict_proba(X_test)[::, 1]
+fpr, tpr, thresholds = roc_curve(Y_test, y_pred_proba)
 
 roc_auc = auc(fpr, tpr)
 print("Area under the ROC curve : %f" % roc_auc)
 
 i = np.arange(len(tpr))
 
-roc = pd.DataFrame({'fpr' : pd.Series(fpr, index=i),
-                    'tpr' : pd.Series(tpr, index = i),
-                    '1-fpr' : pd.Series(1-fpr, index = i),
-                    'tf' : pd.Series(tpr - (1-fpr), index = i),
-                    'thresholds' : pd.Series(thresholds, index = i),
-                    'youden-j': pd.Series(tpr, index = i) - pd.Series(fpr, index=i)})
+roc = pd.DataFrame({'fpr': pd.Series(fpr, index=i),
+                    'tpr': pd.Series(tpr, index=i),
+                    '1-fpr': pd.Series(1 - fpr, index=i),
+                    'tf': pd.Series(tpr - (1 - fpr), index=i),
+                    'thresholds': pd.Series(thresholds, index=i),
+                    'youden-j': pd.Series(tpr, index=i) - pd.Series(fpr, index=i)})
 
-locroc = roc.iloc[(roc.tf-0).abs().argsort()[:1]]
-
-# plt.plot(fpr,tpr,label="data 1, auc="+str(round(auc,3)))
-# plt.legend(loc=4)
-# plt.show()
-
-fig, ax = plt.subplots(1, 2, figsize=(15, 5))
-ax[0].plot(roc['tpr'])
-ax[0].plot(roc['1-fpr'], color = 'red')
-ax[0].set_xlabel('1-False Positive Rate')
-ax[0].set_ylabel('True Positive Rate')
-ax[0].title.set_text('Receiver operating characteristic')
-ax[0].set_xticklabels([])
-
+locroc = roc.iloc[(roc.tf - 0).abs().argsort()[:1]]
 
 df_test = pd.DataFrame({
     "x": X_test.values.flatten(),
@@ -83,18 +79,37 @@ df_test = pd.DataFrame({
     "proba": y_pred_proba
 })
 
-final = df_test.loc[df_test['proba']==locroc["thresholds"].values[0]]
+final = df_test.loc[df_test['proba'] == locroc["thresholds"].values[0]]
+# final50 = df_test.loc[round(df_test['proba'], 6) == 0.5]
+final50 = df_test.loc[(round(df_test['proba'], 5) == 0.5)&df_test['y']==1]
 
+pd.concat([final, final50]).to_csv(f'E:/Publications/BFAST_Monitor/results/blr/zonal_statistics/blr_{index}.csv',
+                                   sep = ',')
 
 df_test.sort_values(by="proba", inplace=True)
-df_test.plot(
-    x="x", y="proba", ax=ax[1],
-    ylabel="Predicted Probabilities", xlabel="X Feature",
-    title="Cut-Off", legend=False
-)
+index_str = index_dict[index]
 
-# sns.regplot(x=X_test, y=y_pred_proba, ax=ax[1],
-#             data=pd.DataFrame({'magn': X_test, 'pre_proba': y_pred_proba}),
-#             logistic=True,
-#             ci=None)
-# plt.show()
+with plt.style.context("bmh"):
+    fig, ax = plt.subplots(1, 2, figsize=(15, 5))
+
+    RocCurveDisplay(
+        fpr=roc.fpr, tpr=roc.tpr,
+        roc_auc=roc_auc).plot(ax=ax[0])
+    ax[0].set_title(f'{index_str} - ROC curve')
+    ax[0].axline(xy1=(0, 0), slope=1, color="k", ls=":")
+
+    reversed_fpr = pd.Series(data=roc['1-fpr'].values, index=(roc['1-fpr'].index/114758))
+    ax[0].plot(reversed_fpr, color='red')
+    ax[0].set_xticklabels([])
+
+    df_test.plot(
+        x="x", y="proba", ax=ax[1],
+        ylabel="Predicted Probabilities", xlabel="Magnitude",
+        title=f"Cut-Off ({index_str})", legend=False
+    )
+    ax[1].axvline(final.iloc[0].x, color="r", ls="-.", lw=1)
+    ax[1].axhline(final.iloc[0].proba, color="r", ls="-.", lw=1)
+    ax[1].axvline(final50.iloc[0].x, color="k", ls=":", lw=1)
+    ax[1].axhline(0.5, color="k", ls=":", lw=1)
+    ax[1].set_xticklabels([])
+    plt.show()
