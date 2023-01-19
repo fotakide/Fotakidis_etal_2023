@@ -30,7 +30,7 @@ data["zone"] = pd.to_numeric(data["zone"], errors='coerce')
 data["min"] = pd.to_numeric(data["min"], errors='coerce')
 data.dropna(inplace=True)
 data["min"] = data["min"].astype(int)
-data.rename(columns={'zone': 'magnitude', 'min': 'burned'})
+data = data.rename(columns={'zone': 'magnitude', 'min': 'burned'})
 
 # Make 50-50
 burned_1 = data[data['burned'] == 1]
@@ -111,6 +111,12 @@ with plt.style.context("bmh"):
     ax[1].axhline(final.iloc[0].proba, color="r", ls="-.", lw=1)
     ax[1].axvline(final50.iloc[0].x/10000, color="k", ls=":", lw=1)
     ax[1].axhline(0.5, color="k", ls=":", lw=1)
+
+    ax[1].axvline(x=final.iloc[0].x, ymax=final.iloc[0].proba,color="r", ls="-.", lw=1)
+    ax[1].axhline(y=final.iloc[0].proba, xmax=final.iloc[0].x, color="r", ls="-.", lw=1)
+    ax[1].axvline(final50.iloc[0].x, ymax=.5, color="k", ls=":", lw=1)
+    ax[1].axhline(0.5,  xmax=final50.iloc[0].x/10000, color="k", ls=":", lw=1)
+
     for tick in ax[1].get_xticklabels():
         tick.set_visible(True)
     plt.tight_layout()
