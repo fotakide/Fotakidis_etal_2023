@@ -90,6 +90,7 @@ pd.concat([final, final50]).to_csv(f'E:/Publications/BFAST_Monitor/results/blr/z
 df_test.sort_values(by="proba", inplace=True)
 index_str = index_dict[index]
 
+df_test.x = df_test.x/10000
 with plt.style.context("bmh"):
     fig, ax = plt.subplots(1, 2, figsize=(15, 5))
 
@@ -101,21 +102,16 @@ with plt.style.context("bmh"):
         roc_auc=roc_auc).plot(ax=ax[0])
     ax[0].set_title(f'{index_str} - ROC curve')
 
-    df_test.x = df_test.x/10000
     df_test.plot(
         x="x", y="proba", ax=ax[1],
         ylabel="Predicted Probabilities", xlabel="Magnitude",
         title=f"Cut-Off ({index_str})", legend=False
     )
-    ax[1].axvline(final.iloc[0].x/10000, color="r", ls="-.", lw=1)
-    ax[1].axhline(final.iloc[0].proba, color="r", ls="-.", lw=1)
-    ax[1].axvline(final50.iloc[0].x/10000, color="k", ls=":", lw=1)
-    ax[1].axhline(0.5, color="k", ls=":", lw=1)
 
-    ax[1].axvline(x=final.iloc[0].x, ymax=final.iloc[0].proba,color="r", ls="-.", lw=1)
-    ax[1].axhline(y=final.iloc[0].proba, xmax=final.iloc[0].x, color="r", ls="-.", lw=1)
-    ax[1].axvline(final50.iloc[0].x, ymax=.5, color="k", ls=":", lw=1)
-    ax[1].axhline(0.5,  xmax=final50.iloc[0].x/10000, color="k", ls=":", lw=1)
+    ax[1].vlines(final.iloc[0].x/10000, ymax=final.iloc[0].proba, ymin=0,color="r", ls="-.", lw=1)
+    ax[1].hlines(y=final.iloc[0].proba, xmax=final.iloc[0]['x']/10000, xmin=df_test['x'].min(), color="r", ls="-.", lw=1)
+    ax[1].vlines(final50.iloc[0].x/10000, ymax=.5, ymin=0,color="k", ls=":", lw=1)
+    ax[1].hlines(y=0.5,  xmax=final50.iloc[0]['x']/10000, xmin=df_test['x'].min(), color="k", ls=":", lw=1)
 
     for tick in ax[1].get_xticklabels():
         tick.set_visible(True)
