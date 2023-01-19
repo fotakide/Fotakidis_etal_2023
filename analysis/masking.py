@@ -44,7 +44,8 @@ def main():
 
     # args = get_sys_argv()
     # arg_json_file = args['json_file']
-    arg_json_file = "E:/Publications/BFAST_Monitor/results/emsr/breaks_decimal_with_accepted_magnitudes/applied_thres/apply_nbr.json"
+    # arg_json_file = "E:/Publications/BFAST_Monitor/results/emsr/breaks_decimal_with_accepted_magnitudes/applied_thres/apply_nbr.json"
+    arg_json_file = "E:/Publications/BFAST_Monitor/results/emsr/breaks_decimal_with_accepted_magnitudes/applied_thres/dnbr_apply_magn_thres_to_breaks_dec.json"
     with open(arg_json_file) as f:
         parameters_dict = json.load(f)
 
@@ -61,7 +62,8 @@ def main():
         with rio.open(magnitudes_path, 'r') as m:
             magnitudes = m.read()
 
-        breaks_dec_masked = np.where(magnitudes[0]==1,breaks_dec[0],-32768)
+        breaks_dec_masked = np.where(magnitudes[0] >= 1000, breaks_dec[0], -32768) # dNBR value
+        # breaks_dec_masked = np.where(magnitudes[0]==1,breaks_dec[0],-32768) # NBR magn
         breaks_dec_masked = breaks_dec_masked.reshape([1,height,width])
         with rio.open(output_path, 'w',
                       driver='GTiff',
