@@ -62,7 +62,12 @@ def main():
         with rio.open(magnitudes_path, 'r') as m:
             magnitudes = m.read()
 
-        breaks_dec_masked = np.where(magnitudes[0] >= 1000, breaks_dec[0], -32768) # dNBR value
+        breaks_dec_masked = np.full(shape=[height, width], fill_value=-32768)
+        breaks_dec_masked = np.where((breaks_dec[0]>0)&(magnitudes[0] >= 1000), breaks_dec[0], breaks_dec_masked) # dNBR value
+        breaks_dec_masked = np.where((breaks_dec[0]>0)&(breaks_dec_masked == -32768), -1, breaks_dec_masked)  # dNBR value
+        # breaks_dec_masked = np.where(breaks_dec[0] == -2, -32768, breaks_dec[0])  # dNBR value
+        # breaks_dec_masked = np.where(breaks_dec[0] == -1, -1, breaks_dec_masked)  # dNBR value
+        # breaks_dec_masked = np.where(breaks_dec[0] == -2, -32768, breaks_dec_masked)  # dNBR value
         # breaks_dec_masked = np.where(magnitudes[0]==1,breaks_dec[0],-32768) # NBR magn
         breaks_dec_masked = breaks_dec_masked.reshape([1,height,width])
         with rio.open(output_path, 'w',
