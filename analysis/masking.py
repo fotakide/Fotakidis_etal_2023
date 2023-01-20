@@ -44,8 +44,8 @@ def main():
 
     # args = get_sys_argv()
     # arg_json_file = args['json_file']
-    # arg_json_file = "E:/Publications/BFAST_Monitor/results/emsr/breaks_decimal_with_accepted_magnitudes/applied_thres/apply_nbr.json"
-    arg_json_file = "E:/Publications/BFAST_Monitor/results/emsr/breaks_decimal_with_accepted_magnitudes/applied_thres/dnbr_apply_magn_thres_to_breaks_dec.json"
+    arg_json_file = "E:/Publications/BFAST_Monitor/results/emsr/rasters/breaks_dec/thres/nbr_thres.json"
+    # arg_json_file = "E:/Publications/BFAST_Monitor/results/emsr/rasters/breaks_dec/thres/dnbr_thres.json"
     with open(arg_json_file) as f:
         parameters_dict = json.load(f)
 
@@ -62,13 +62,11 @@ def main():
         with rio.open(magnitudes_path, 'r') as m:
             magnitudes = m.read()
 
-        breaks_dec_masked = np.full(shape=[height, width], fill_value=-32768)
-        breaks_dec_masked = np.where((breaks_dec[0]>0)&(magnitudes[0] >= 1000), breaks_dec[0], breaks_dec_masked) # dNBR value
-        breaks_dec_masked = np.where((breaks_dec[0]>0)&(breaks_dec_masked == -32768), -1, breaks_dec_masked)  # dNBR value
-        # breaks_dec_masked = np.where(breaks_dec[0] == -2, -32768, breaks_dec[0])  # dNBR value
-        # breaks_dec_masked = np.where(breaks_dec[0] == -1, -1, breaks_dec_masked)  # dNBR value
-        # breaks_dec_masked = np.where(breaks_dec[0] == -2, -32768, breaks_dec_masked)  # dNBR value
-        # breaks_dec_masked = np.where(magnitudes[0]==1,breaks_dec[0],-32768) # NBR magn
+        breaks_dec_masked = breaks_dec[0]
+        # breaks_dec_masked = np.where((breaks_dec[0]>0)&(magnitudes[0] < 1000), -1, breaks_dec_masked) # dNBR value
+
+        breaks_dec_masked = np.where((breaks_dec[0]>0)&(magnitudes[0] > -360.255), -1, breaks_dec_masked) # NBR value
+
         breaks_dec_masked = breaks_dec_masked.reshape([1,height,width])
         with rio.open(output_path, 'w',
                       driver='GTiff',
