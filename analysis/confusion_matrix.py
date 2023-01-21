@@ -21,11 +21,42 @@ def get_sys_argv():
     return config
 
 
-def get_classified(ref, brp):
-    unburned_unburned = np.count_nonzero((ref == 0) & (brp == -1))
-    burned_unburned = np.count_nonzero((ref > 0) & (brp == -1))
-    burned_burned = np.count_nonzero((ref > 0) & (brp > 0))
-    unburned_burned = np.count_nonzero((ref == 0) & (brp > 0))
+def get_geotransformation(metadata_src):
+    """
+    :param metadata_src: Path to a file from which to read metadata
+    :return: A list of metadata in [width, height, transform, crs] order
+    """
+    with rio.open(metadata_src) as src:
+        width = src.width
+        height = src.height
+        transform = src.transform
+        crs = src.crs
+    metadata = [width, height, transform, crs]
+    if not src.closed: src.close()
+    return metadata
+
+
+def save_classified(ref, brp,width, height, transform, crs, output_path):
+    cla = brp
+
+    cla = np.where((ref == 0) & (brp == -1),1,cla)
+    cla = np.where((ref > 0) & (brp == -1),-1,cla)
+    cla = np.where((ref > 0) & (brp > 0),2,cla)
+    cla = np.where((ref == 0) & (brp > 0),-2, cla)
+
+    cla = cla.reshape([1, height, width])
+
+    out = '/'.join(output_path.split('/')[:-1] + [output_path.split('/')[-1].replace('csv', 'tif')])
+
+    with rio.open(out, 'w',
+                  driver='GTiff',
+                  height=height,
+                  width=width,
+                  count=1,
+                  dtype=rio.float32,
+                  crs=crs,
+                  transform=transform) as dst:
+        dst.write(cla)
 
 
 def compute_error_matrix(ref, brp, emsr, idx, output):
@@ -74,13 +105,10 @@ def compute_error_matrix(ref, brp, emsr, idx, output):
     return df.to_dict('records')
 
 
-
-
-
 def main():
     # args = get_sys_argv()
     # arg_json_file = args['json_file']
-    arg_json_file = "E:/Publications/BFAST_Monitor/results/emsr/zonal_stats_ras2ras/rasta_code18.json"
+    arg_json_file = "E:/Publications/BFAST_Monitor/results/emsr/zonal_stats_ras2ras/rasta_code18_dnbr_rbr_nbr360.json"
 
     with open(arg_json_file) as f:
         parameters_dict = json.load(f)
@@ -103,8 +131,12 @@ def main():
         with rio.open(referenced_path, 'r') as r:
             ref = r.read()
 
+        width, height, transform, crs = get_geotransformation(breaks_dec_path)
+
         brp = brp[0]
         ref = ref[0]
+
+        save_classified(ref, brp, width, height, transform, crs, output_path)
 
         results_dict = compute_error_matrix(ref=ref, brp=brp, idx=idx, emsr=emsr, output=output_path)
 
