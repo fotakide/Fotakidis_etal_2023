@@ -135,9 +135,9 @@ def get_geotransformation(metadata_src):
 
 def get_monitor_periods_ranges(start, dates):
     starts_list = [s for s in pd.date_range(start=start, end=dates[-1], freq='6MS', tz=None).to_pydatetime()]
-    if (dates[-1] - starts_list[-1]) < timedelta(days=+180):
-        starts_list[-1] = (dates[-1] - timedelta(days=+180)).replace(day=1)
-    ends_list = [e + relativedelta(months=+6) for e in starts_list]
+    if (dates[-1] - starts_list[-1]) < timedelta(days=+360):
+        starts_list[-1] = (dates[-1] - timedelta(days=+360)).replace(day=1)
+    ends_list = [e + relativedelta(months=+12) for e in starts_list]
     ends_list[-1] = dates[-1]
     return starts_list, ends_list
 
@@ -151,25 +151,25 @@ def assemble_results(model, rows, cols, data, dates2, dates, start, end, output,
         if start <= dates2[i]:
             dates_monitor.append(dates2[i])
     dates_array = np.array(dates_monitor)
-    
+
     breaks_dec = np.empty([rows, cols], dtype=float)
     magnitudes = np.empty([rows, cols], dtype=float)
 
-    # Extract the relevant dates from the dates_array using the indices in the breaks array   
-    if model.breaks.max()>=0:
+    # Extract the relevant dates from the dates_array using the indices in the breaks array
+    if model.breaks.max() >= 0:
         valid_break = model.breaks >= 0
-        dates_decimal = np.array([round(pyasl.decimalYear(d),3) for d in dates_array])
+        dates_decimal = np.array([round(pyasl.decimalYear(d), 3) for d in dates_array])
         breaks_dec = np.where(valid_break, dates_decimal[model.breaks], model.breaks)
     else:
         breaks_dec = model.breaks
-    
+
     breaks = model.breaks
     means = model.means
     valids = model.valids
     magnitudes = model.magnitudes
 
-    data = data[int(data.shape[0]-len(dates_array)):data.shape[0],:,:]
-    flags = np.expand_dims(model.breaks, axis=0)  
+    data = data[int(data.shape[0] - len(dates_array)):data.shape[0], :, :]
+    flags = np.expand_dims(model.breaks, axis=0)
     values_of_breaks = np.choose(flags, data, mode='clip')
     values_of_breaks = values_of_breaks.squeeze()
 
@@ -180,12 +180,15 @@ def assemble_results(model, rows, cols, data, dates2, dates, start, end, output,
     list(map(lambda subdir_name: (output.joinpath(subdir_name)).mkdir(parents=True, exist_ok=True), result_names))
 
     np.savez_compressed(f'{str(output)}/breaks/{name}_breaks_{sub}_{start.year}-{end.year}-{start.month}', breaks)
-    np.savez_compressed(f'{str(output)}/breaks_dec/{name}_breaks_dec_{sub}_{start.year}-{end.year}-{start.month}', breaks_dec)
-    np.savez_compressed(f'{str(output)}/magnitudes/{name}_magnitudes_{sub}_{start.year}-{end.year}-{start.month}', magnitudes)
+    np.savez_compressed(f'{str(output)}/breaks_dec/{name}_breaks_dec_{sub}_{start.year}-{end.year}-{start.month}',
+                        breaks_dec)
+    np.savez_compressed(f'{str(output)}/magnitudes/{name}_magnitudes_{sub}_{start.year}-{end.year}-{start.month}',
+                        magnitudes)
     np.savez_compressed(f'{str(output)}/means/{name}_means_{sub}_{start.year}-{end.year}-{start.month}', means)
     np.savez_compressed(f'{str(output)}/valids/{name}_valids_{sub}_{start.year}-{end.year}-{start.month}', valids)
-    np.savez_compressed(f'{str(output)}/values_of_breaks/{name}_values_of_breaks_{sub}_{start.year}-{end.year}-{start.month}',
-                        values_of_breaks)
+    np.savez_compressed(
+        f'{str(output)}/values_of_breaks/{name}_values_of_breaks_{sub}_{start.year}-{end.year}-{start.month}',
+        values_of_breaks)
 
 
 def join_results(input_path, output_path, metadata, name, prefix):
@@ -203,7 +206,7 @@ def join_results(input_path, output_path, metadata, name, prefix):
             tmp_output_dir = Path(output_path, period)
             tmp_output_dir.mkdir(parents=True, exist_ok=True)
 
-            npz_paths = glob.glob(str(Path(input_path, period ,str(result), '*sub[0-9]*.npz')))
+            npz_paths = glob.glob(str(Path(input_path, period, str(result), '*sub[0-9]*.npz')))
             key = natsort_keygen(key=lambda y: y.lower())
             npz_paths.sort(key=key)
 
@@ -298,7 +301,7 @@ def main():
         find_magnitudes=bfast_param['find_magnitudes']
     )
 
-    if (supplying_16D_smoothed_npz and not only_join):
+    if supplying_16D_smoothed_npz and not only_join:
         dates = [d for d in pd.date_range(start=dates[0], end=dates[-1], freq='16D', tz=None).to_pydatetime()]
         if index in ['dnbr', 'rbr']:
             subs = os.listdir(input_files)
@@ -337,7 +340,7 @@ def main():
                 sub = subs[task]
                 npz = np.load(str(Path(input_files, sub, f'sm_nbr_{time_series_resampling}_{sub}.npz')))
                 data = np.array(npz[npz.files[0]])
-                
+
                 output_path = Path(output_prejoin, prefix, index)
                 output_path.mkdir(parents=True, exist_ok=True)
 
@@ -361,10 +364,10 @@ def main():
     elif only_join:
         output_path = Path(output_prejoin, prefix, index)
         join_results(input_path=str(Path(output_prejoin, prefix, index)),
-                output_path=output,
-                metadata=metadata,
-                name=index,
-                prefix=prefix)
+                     output_path=output,
+                     metadata=metadata,
+                     name=index,
+                     prefix=prefix)
     else:
         raise Exception("Provide 16-day smoothed npz files")
 
