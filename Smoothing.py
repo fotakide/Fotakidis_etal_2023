@@ -40,16 +40,14 @@ def smoothing(index, dates, time_series_resampling, output, suffix, si):
     :return: The smoothed dataset, the new date range corresponding to the resampling frequency
     and the metadata of the dataset (rows and columns).
     """
-    index = np.where(index == -32768, np.nan, index)
+    index = np.where((index == -32768)|(index == 0)|(index == -9999), np.nan, index)
     rows, cols = index.shape[1], index.shape[2]
     index_df = pd.DataFrame(index.reshape([index.shape[0], -1]), index=dates)
     del index
-    smoothed = index_df.resample('D').median()
-    smoothed = smoothed.interpolate(method='linear', axis=0)
-    smoothed = smoothed.resample(time_series_resampling).median()
-    smoothed = smoothed.interpolate(method='linear', axis=0)
-    smoothed = smoothed.replace(np.nan, -32768)
-    smoothed_np = smoothed.to_numpy().astype('int16')
+    smoothed = index_df.interpolate(method='linear', axis=0, limit_direction='both')
+    smoothed = smoothed.resample(time_series_resampling).ffill()
+    smoothed_np = smoothed.to_numpy().astype('float32')
+
     new_dates_range = smoothed.index.to_pydatetime().tolist()[1:]
     del smoothed
     bands = smoothed_np.shape[0]
