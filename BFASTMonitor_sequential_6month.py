@@ -87,13 +87,14 @@ def get_bitemporal_data(index, smoothed_stack):
                 arr_pre = smoothed_stack[pre]
                 arr_post = smoothed_stack[post]
 
-                RBR = np.where((((arr_pre == -32768) & (arr_post == -32768)) | (
-                        ((arr_pre == -32768) & (arr_post != -32768)) | ((arr_pre != -32768) & (arr_post == -32768)))),
-                               -3.2768,
-                               (arr_pre - arr_post) / (arr_pre + 10010))
-                RBR = np.where(RBR < -1, -3.2768, RBR)
-                RBR = np.round(RBR, decimals=4).astype('float32')
-                RBR = (np.multiply(RBR, 10000)).astype('int16')
+                # RBR = np.where((((arr_pre == -32768) & (arr_post == -32768)) | (
+                #         ((arr_pre == -32768) & (arr_post != -32768)) | ((arr_pre != -32768) & (arr_post == -32768)))),
+                #                -3.2768,
+                #                (arr_pre - arr_post) / (arr_pre + 10010))
+                # RBR = np.where(RBR < -1, -3.2768, RBR)
+                # RBR = np.round(RBR, decimals=4).astype('float32')
+                RBR = (arr_pre - arr_post) / (arr_pre + 1.001)
+                # RBR = (np.multiply(RBR, 10000)).astype('int16')
 
                 f_stack.append(RBR)
             data = np.stack(f_stack, axis=0)
@@ -104,13 +105,15 @@ def get_bitemporal_data(index, smoothed_stack):
                 arr_pre = smoothed_stack[pre]
                 arr_post = smoothed_stack[post]
 
-                dNBR = np.where((((arr_pre == -32768) & (arr_post == -32768)) | (
-                        ((arr_pre == -32768) & (arr_post != -32768)) | ((arr_pre != -32768) & (arr_post == -32768)))),
-                                -32768,
-                                (arr_pre - arr_post)
-                                )
+                # dNBR = np.where((((arr_pre == -32768) & (arr_post == -32768)) | (
+                #         ((arr_pre == -32768) & (arr_post != -32768)) | ((arr_pre != -32768) & (arr_post == -32768)))),
+                #                 -32768,
+                #                 (arr_pre - arr_post)
+                #                 )
 
-                dNBR = np.where((dNBR > 10000) | (dNBR < -10000), -32768, dNBR)
+                dNBR = arr_pre - arr_post
+
+                # dNBR = np.where((dNBR > 10000) | (dNBR < -10000), -32768, dNBR)
 
                 f_stack.append(dNBR)
             data = np.stack(f_stack, axis=0)
